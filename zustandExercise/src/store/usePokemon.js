@@ -6,10 +6,14 @@ export const usePokemon = create((set, get) => ({
   data: [],
   offset: 0,
   toggleLoading: () => set((state) => ({ isLoading: !state.isLoading })),
-  setError: (error) => set((state) => ({ error })),
+  setError: (error) => set(() => ({ error })),
+  setData: (data) => set((state) => ({ data: [...state.data, ...data] })),
+  incrementOffset: () => set((state) => ({ offset: state.offset + 10 })),
   getPokemon: async (offset) => {
     const toggleLoading = get().toggleLoading;
     const setError = get().setError;
+    const setData = get().setData;
+    const incrementOffset = get().incrementOffset;
     const url = `https://pokeapi.co/api/v2/pokemon/?offset=${offset}&limit=10`;
 
     toggleLoading();
@@ -17,11 +21,8 @@ export const usePokemon = create((set, get) => ({
       const res = await fetch(url);
       const json = await res.json();
       toggleLoading();
-
-      return set((state) => ({
-        offset: state.offset + 10,
-        data: [...state.data, ...json.results],
-      }));
+      setData(json.results);
+      incrementOffset();
     } catch (err) {
       toggleLoading();
       setError(err.message);
